@@ -15,7 +15,7 @@ db_config = {
     'password': '',
     'database': 'gestion'
 }
-
+ 
 @app.route('/requerimientos', methods=['GET'])
 def get_requirements():
     try:
