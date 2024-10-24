@@ -6,13 +6,13 @@ from mysql.connector import Error
 app = Flask(__name__)
 
 # Habilita CORS en toda la aplicación Flask
-CORS(app)
+CORS(app, resources={r"/*": {"origins": "*"}})
 
 # Configuración de la base de datos
 db_config = {
-    'host': '127.0.0.1',
+    'host': 'gestion-base.cz2gmikqglrz.us-east-2.rds.amazonaws.com',
     'user': 'root',
-    'password': '',
+    'password': 'prueba1234',
     'database': 'gestion'
 }
 
@@ -21,7 +21,7 @@ def get_requirements():
     try:
         conn = mysql.connector.connect(**db_config)
         cursor = conn.cursor(dictionary=True)
-        cursor.execute("SELECT id, nombre, apellido, sexo, dni, edad, codigo, ubicacion, servicio, medio_transporte,fecha FROM requerimientos")
+        cursor.execute("SELECT id, nombre, apellido, sexo, dni, edad, codigo, ubicacion, servicio, medio_transporte, fecha, solicitante FROM requerimientos")
         requirements = cursor.fetchall()
         return jsonify(requirements), 200
     except Error as e:
@@ -35,8 +35,10 @@ def get_requirements():
             cursor.close()
         if 'conn' in locals() and conn.is_connected():
             conn.close()
+@app.route('/test', methods=['GET'])
+def test():
+    return jsonify({"message": "Este es un endpoint de prueba"}), 200
 
-            
 
 if __name__ == '__main__':
-    app.run(debug=True, port=8080)
+    app.run(debug=True, port=8080)  # Asegúrate de que Flask esté en el puerto 8080

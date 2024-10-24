@@ -85,6 +85,7 @@
                     <th>Servicio</th>
                     <th>Medio de Transporte</th>
                     <th>Fecha</th>
+                    <th>Solicitante</th>
                 </tr>
             </thead>
             <tbody>
@@ -94,63 +95,42 @@
     </div>
 
     <script>
-      function fetchRequirements() {
-    fetch('http://127.0.0.1:8080/requerimientos')
-    .then(response => {
-        if (!response.ok) {
-            return response.text().then(text => {
-                throw new Error(`Error ${response.status}: ${text}`);
-            });
+        function fetchRequirements() {
+            fetch('http://127.0.0.1:8080/requerimientos')  // Asegúrate de que esta URL sea correcta
+                .then(response => {
+                    if (!response.ok) {
+                        return response.text().then(text => {
+                            throw new Error(`Error ${response.status}: ${text}`);
+                        });
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    let tableBody = document.querySelector('#requirements-table tbody');
+                    tableBody.innerHTML = ''; // Limpiamos la tabla antes de agregar nuevos datos
+
+                    data.forEach(req => {
+                        let row = `
+                            <tr>
+                                <td>${req.id}</td>
+                                <td>${req.nombre}</td>
+                                <td>${req.apellido}</td>
+                                <td>${req.sexo}</td>
+                                <td>${req.dni}</td>
+                                <td>${req.edad}</td>
+                                <td>${req.codigo}</td>
+                                <td>${req.ubicacion}</td>
+                                <td>${req.servicio}</td>
+                                <td>${req.medio_transporte}</td>
+                                <td>${req.fecha}</td>
+                                <td>${req.solicitante}</td>
+                            </tr>
+                        `;
+                        tableBody.innerHTML += row;
+                    });
+                })
+                .catch(error => console.error('Error fetching data:', error));
         }
-        return response.json();  // Aquí puedes acceder al contenido JSON
-    })
-    .then(data => {
-        let tableBody = document.querySelector('#requirements-table tbody');
-        tableBody.innerHTML = ''; // Limpiamos la tabla antes de agregar nuevos datos
-
-        data.forEach(req => {
-            let row = `
-                <tr>
-                    <td>${req.id}</td>
-                    <td>${req.nombre}</td>
-                    <td>${req.apellido}</td>
-                    <td>${req.sexo}</td>
-                    <td>${req.dni}</td>
-                    <td>${req.edad}</td>
-                    <td>${req.codigo}</td>
-                    <td>${req.ubicacion}</td>
-                    <td>${req.servicio}</td>
-                    <td>${req.medio_transporte}</td>
-                    <td>${req.fecha}</td>
-                </tr>
-            `;
-            tableBody.innerHTML += row;
-        });
-    })
-    .catch(error => console.error('Error fetching data:', error));
-}
-const traducciones = {
-    medio_transporte: "Medio de Transporte",
-    fecha: "Fecha",
-    // Agrega más traducciones según sea necesario
-};
-
-const tabla = document.getElementById('miTabla'); // Suponiendo que tienes un elemento tabla
-const fila = document.createElement('tr');
-
-const celdaMedioTransporte = document.createElement('td');
-celdaMedioTransporte.textContent = traducciones.medio_transporte + ': ' + req.medio_transporte;
-
-const celdaFecha = document.createElement('td');
-celdaFecha.textContent = traducciones.fecha + ': ' + req.fecha;
-
-fila.appendChild(celdaMedioTransporte);
-fila.appendChild(celdaFecha);
-tabla.appendChild(fila);
-
-
-
-
     </script>
 
 </body>
