@@ -3,155 +3,116 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Requerimientos</title>
+    <title>Gestión de Camilleros - Tareas</title>
     <style>
-        body {
-            font-family: Arial, sans-serif;
-            background-color: #f4f4f4;
-            margin: 0;
-            padding: 0;
-        }
-
-        .container {
-            max-width: 800px;
-            margin: 50px auto;
-            padding: 20px;
-            background-color: white;
-            border-radius: 8px;
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-        }
-
-        h1 {
-            text-align: center;
-        }
-
-        table {
-            width: 100%;
-            border-collapse: collapse;
-        }
-
-        table, th, td {
-            border: 1px solid #ddd;
-        }
-
-        th, td {
-            padding: 8px;
-            text-align: center;
-        }
-
-        th {
-            background-color: #004aad;
-            color: white;
-        }
-
-        tr:nth-child(even) {
-            background-color: #f2f2f2;
-        }
-
-        button {
-            display: block;
-            margin: 20px auto;
-            padding: 10px 20px;
-            background-color: #004aad;
-            color: white;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-        }
-
-        button:hover {
-            background-color: #003a8c;
-        }
-
+        body { font-family: Arial, sans-serif; }
+        .container { max-width: 800px; margin: 0 auto; padding: 20px; }
+        .task, .requirement { border: 1px solid #ddd; padding: 10px; margin: 10px 0; }
+        button { padding: 5px 10px; background-color: #004aad; color: white; border: none; cursor: pointer; }
+        button:hover { background-color: #003380; }
     </style>
 </head>
 <body>
-
     <div class="container">
-        <h1>Requerimientos</h1>
-        <button onclick="fetchRequirements()">Obtener Requerimientos</button>
+        <h1>Gestión de Camilleros</h1>
+        
+        <h2>Requerimientos</h2>
+        <div id="requirements-list"></div>
 
-        <table id="requirements-table">
-            <thead>
-                <tr>
-                    <th>ID</th>
-                    <th>Nombre</th>
-                    <th>Apellido</th>
-                    <th>Sexo</th>
-                    <th>DNI</th>
-                    <th>Edad</th>
-                    <th>Código</th>
-                    <th>Ubicación</th>
-                    <th>Servicio</th>
-                    <th>Medio de Transporte</th>
-                    <th>Fecha</th>
-                </tr>
-            </thead>
-            <tbody>
-                <!-- Aquí se agregarán los requerimientos dinámicamente -->
-            </tbody>
-        </table>
+        <h2>Tareas</h2>
+        <div id="tasks-list"></div>
     </div>
 
     <script>
-      function fetchRequirements() {
-    fetch('http://127.0.0.1:8080/requerimientos')
-    .then(response => {
-        if (!response.ok) {
-            return response.text().then(text => {
-                throw new Error(`Error ${response.status}: ${text}`);
-            });
+        const apiUrl = 'http://localhost:8080';
+
+        // Obtener y mostrar la lista de requerimientos
+        async function fetchRequirements() {
+            try {
+                const response = await fetch(`${apiUrl}/requerimientos`);
+                if (!response.ok) throw new Error('Error al obtener los requerimientos');
+                const requirements = await response.json();
+                const requirementsList = document.getElementById('requirements-list');
+                requirementsList.innerHTML = '';
+                requirements.forEach(req => {
+                    const reqDiv = document.createElement('div');
+                    reqDiv.className = 'requirement';
+                    reqDiv.innerHTML = `
+                        <strong>Requerimiento #${req.id}</strong><br>
+                        Nombre: ${req.nombre} ${req.apellido}<br>
+                        Ubicación: ${req.ubicacion}<br>
+                        <button onclick="acceptRequirement(${req.id})">Aceptar como Tarea</button>
+                    `;
+                    requirementsList.appendChild(reqDiv);
+                });
+            } catch (error) {
+                alert(error.message);
+            }
         }
-        return response.json();  // Aquí puedes acceder al contenido JSON
-    })
-    .then(data => {
-        let tableBody = document.querySelector('#requirements-table tbody');
-        tableBody.innerHTML = ''; // Limpiamos la tabla antes de agregar nuevos datos
 
-        data.forEach(req => {
-            let row = `
-                <tr>
-                    <td>${req.id}</td>
-                    <td>${req.nombre}</td>
-                    <td>${req.apellido}</td>
-                    <td>${req.sexo}</td>
-                    <td>${req.dni}</td>
-                    <td>${req.edad}</td>
-                    <td>${req.codigo}</td>
-                    <td>${req.ubicacion}</td>
-                    <td>${req.servicio}</td>
-                    <td>${req.medio_transporte}</td>
-                    <td>${req.fecha}</td>
-                </tr>
-            `;
-            tableBody.innerHTML += row;
-        });
-    })
-    .catch(error => console.error('Error fetching data:', error));
-}
-const traducciones = {
-    medio_transporte: "Medio de Transporte",
-    fecha: "Fecha",
-    // Agrega más traducciones según sea necesario
-};
+        // Aceptar un requerimiento como tarea
+        async function acceptRequirement(id) {
+            try {
+                const response = await fetch(`${apiUrl}/requerimientos/${id}/aceptar`, {
+                    method: 'POST'
+                });
+                if (!response.ok) throw new Error('Error al aceptar el requerimiento');
+                alert('Requerimiento aceptado como tarea');
+                fetchTasks();
+            } catch (error) {
+                alert(error.message);
+            }
+        }
 
-const tabla = document.getElementById('miTabla'); // Suponiendo que tienes un elemento tabla
-const fila = document.createElement('tr');
+        // Obtener y mostrar la lista de tareas
+        async function fetchTasks() {
+            try {
+                const response = await fetch(`${apiUrl}/tareas`);
+                if (!response.ok) throw new Error('Error al obtener las tareas');
+                const tasks = await response.json();
+                const tasksList = document.getElementById('tasks-list');
+                tasksList.innerHTML = '';
+                tasks.forEach(task => {
+                    const taskDiv = document.createElement('div');
+                    taskDiv.className = 'task';
+                    taskDiv.innerHTML = `
+                        <strong>Tarea #${task.id}</strong><br>
+                        Paciente: ${task.nombre} ${task.apellido}<br>
+                        Estado: ${task.estado}<br>
+                        Ubicación ${task.ubicacion}<br>
+                        servicio:${task.servicio}<br>
+                        <button onclick="updateTaskStatus(${task.id}, 'inicio_busqueda')">Inicio Búsqueda</button>
+                        <button onclick="updateTaskStatus(${task.id}, 'inicio_traslado')">Inicio Traslado</button>
+                        <button onclick="updateTaskStatus(${task.id}, 'fin_traslado')">Fin Traslado</button>
+                    `;
+                    tasksList.appendChild(taskDiv);
+                });
+            } catch (error) {
+                alert(error.message);
+            }
+        }
 
-const celdaMedioTransporte = document.createElement('td');
-celdaMedioTransporte.textContent = traducciones.medio_transporte + ': ' + req.medio_transporte;
+        // Actualizar el estado de una tarea
+        async function updateTaskStatus(id, newStatus) {
+            try {
+                const response = await fetch(`${apiUrl}/tareas/${id}/actualizar`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ estado: newStatus })
+                });
+                if (!response.ok) throw new Error('Error al actualizar la tarea');
+                alert('Estado de la tarea actualizado');
+                fetchTasks();  // Recargar la lista de tareas para mostrar el estado actualizado
+            } catch (error) {
+                alert(error.message);
+            }
+        }
 
-const celdaFecha = document.createElement('td');
-celdaFecha.textContent = traducciones.fecha + ': ' + req.fecha;
-
-fila.appendChild(celdaMedioTransporte);
-fila.appendChild(celdaFecha);
-tabla.appendChild(fila);
-
-
-
-
+        // Cargar requerimientos y tareas al iniciar
+        fetchRequirements();
+        fetchTasks();
     </script>
-
 </body>
 </html>
