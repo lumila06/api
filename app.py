@@ -1,4 +1,4 @@
-#faltan ver porque en la base de datos todo se guarda como null
+
 
 import os
 from flask import Flask, jsonify, request
@@ -108,6 +108,10 @@ def actualizar_tarea(id):
         conn = get_db_connection()
         cursor = conn.cursor()
         
+        # Comprobar si el ID no es nulo (esto puede ser redundante porque ya se define como int)
+        if id is None:
+            return jsonify({"error": "ID no puede ser nulo"}), 400
+
         # Obtener los datos del cuerpo de la solicitud
         data = request.json
         nuevo_estado = data.get('estado')
@@ -132,6 +136,7 @@ def actualizar_tarea(id):
             cursor.close()
         if 'conn' in locals() and conn.is_connected():
             conn.close()
+
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=8080)
